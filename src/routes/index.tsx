@@ -146,8 +146,8 @@ function Tour() {
     } catch {}
   }, [autoRotate, currentRoom]);
 
-  // Smooth "walk into" transition: look toward the doorway, zoom in,
-  // fade scene, then settle the camera in the new room facing back.
+  // Smooth "walk into" transition: aim at the doorway, dolly forward (zoom in),
+  // crossfade scenes, then ease back to a natural FOV facing into the new room.
   const walkTo = (targetId: RoomId) => {
     const v = viewerRef.current;
     if (!v || transitioningRef.current) return;
@@ -155,30 +155,37 @@ function Tour() {
     if (fromId === targetId) return;
 
     const fromRoom = rooms.find((r) => r.id === fromId);
+    const targetRoom = rooms.find((r) => r.id === targetId);
     const exit = fromRoom?.exits[targetId];
+    const back = targetRoom?.exits[fromId];
+
     transitioningRef.current = true;
     setTransitioning(true);
+    try { v.stopAutoRotate(); } catch {}
 
-    try {
-      v.stopAutoRotate();
-      // 1. Aim camera at the doorway
-      if (exit) {
-        v.lookAt(exit.pitch, exit.yaw, 75, 700);
-      }
-    } catch {}
+    // 1) Aim toward the doorway
+    const aimYaw = exit ? exit.yaw : v.getYaw();
+    const aimPitch = exit ? exit.pitch : 0;
+    try { v.lookAt(aimPitch, aimYaw, 95, 650); } catch {}
 
-    // 2. After the look-at finishes, load the next scene facing back
+    // 2) Dolly forward — narrow FOV to feel like stepping through the door
     window.setTimeout(() => {
-      const back = rooms.find((r) => r.id === targetId)?.exits[fromId];
-      const entryYaw = back ? back.yaw + 180 : 0;
-      try {
-        v.loadScene(targetId, 0, entryYaw, 100);
-      } catch {}
+      try { v.lookAt(aimPitch, aimYaw, 55, 550); } catch {}
+    }, 680);
+
+    // 3) Swap scenes mid-dolly; enter facing into the new room
+    window.setTimeout(() => {
+      const entryYaw = back ? back.yaw + 180 : aimYaw;
+      try { v.loadScene(targetId, 0, entryYaw, 65); } catch {}
+      // 4) Ease FOV back out for a natural arrival
+      window.setTimeout(() => {
+        try { v.lookAt(0, entryYaw, 100, 900); } catch {}
+      }, 260);
       window.setTimeout(() => {
         transitioningRef.current = false;
         setTransitioning(false);
-      }, 1300);
-    }, 750);
+      }, 1400);
+    }, 1180);
   };
 
   const currentName = rooms.find((r) => r.id === currentRoom)?.name ?? "";
