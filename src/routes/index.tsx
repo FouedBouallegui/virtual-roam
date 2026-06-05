@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import livingAsset from "@/assets/living.jpeg.asset.json";
-import kitchenAsset from "@/assets/kitchen.jpeg.asset.json";
+import livingImg from "@/assets/living.jpeg";
+import kitchenImg from "@/assets/kitchen.jpeg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -32,13 +32,13 @@ const rooms: Room[] = [
   {
     id: "living",
     name: "Living Room",
-    image: livingAsset.url,
+    image: livingImg,
     exits: { kitchen: { to: "kitchen", yaw: 60, pitch: -5 } },
   },
   {
     id: "kitchen",
     name: "Kitchen & Dining",
-    image: kitchenAsset.url,
+    image: kitchenImg,
     exits: { living: { to: "living", yaw: -60, pitch: -5 } },
   },
 ];
