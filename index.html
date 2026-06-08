@@ -2,411 +2,478 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Virtual House Tour — 360°</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Premium Real Estate Portfolio — 360° Virtual Experience</title>
   <meta name="description" content="Explore the home in an immersive 360° virtual tour." />
-  <meta property="og:title" content="Virtual House Tour — 360°" />
-  <meta property="og:description" content="Explore the home in an immersive 360° virtual tour." />
-  <meta property="og:type" content="website" />
 
-  <!-- Pannellum -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css" />
 
-  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
 
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    /* ── LIGHT/DARK VARIANCE STYLING ── */
     :root {
-      --white: #ffffff;
-      --black: #000000;
+      --bg-primary: #ffffff;
+      --bg-secondary: #f8f9fa;
+      --border-color: #e9ecef;
+      --text-main: #0d0d0d;
+      --text-supporting: #555555;
+      
+      /* TOUR CONTROLS HUD (Stays deep dark glass for maximum texture contrast) */
+      --glass-bg: rgba(15, 15, 15, 0.85);
+      --glass-border: rgba(255, 255, 255, 0.12);
+      --glass-hover: rgba(255, 255, 255, 0.2);
+      --text-muted: rgba(255, 255, 255, 0.65);
       --emerald: #34d399;
-      --glass-bg: rgba(0,0,0,0.45);
-      --glass-border: rgba(255,255,255,0.10);
-      --glass-hover: rgba(255,255,255,0.15);
-      --text-muted: rgba(255,255,255,0.60);
-      --text-dim: rgba(255,255,255,0.40);
+      --white: #ffffff;
     }
 
-    html, body {
-      height: 100%;
-      overflow: hidden;
-      background: #000;
+    [data-theme="dark"] {
+      --bg-primary: #0a0a0a;
+      --bg-secondary: #121212;
+      --border-color: #1f1f1f;
+      --text-main: #f5f5f5;
+      --text-supporting: #b0b0b0;
+    }
+
+    body {
+      background: var(--bg-primary);
       font-family: 'DM Sans', sans-serif;
-      color: var(--white);
+      color: var(--text-main);
+      line-height: 1.6;
+      overflow-x: hidden;
+      transition: background 0.3s ease, color 0.3s ease;
     }
 
-    /* ── Pannellum container ── */
-    #pnlm-container {
-      position: fixed;
-      inset: 0;
-      z-index: 1;
+    /* ── MAIN LANDING NAVIGATION BAR ── */
+    .site-header {
+      position: sticky;
+      top: 0;
+      background: var(--bg-primary);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.25rem 2rem;
+      z-index: 100;
+      transition: background 0.3s ease, border-color 0.3s ease;
     }
-    .pnlm-container { background: #000 !important; }
-
-    /* ── Loading veil ── */
-    #loading-veil {
-      position: fixed;
-      inset: 0;
-      z-index: 50;
+    .site-logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.6rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .site-nav {
       display: flex;
       align-items: center;
-      justify-content: center;
-      background: #000;
+      gap: 2rem;
+    }
+    .site-nav a {
+      color: var(--text-main);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      transition: opacity 0.2s;
+    }
+    .site-nav a:hover { opacity: 0.6; }
+
+    .theme-toggle {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s ease;
+    }
+    .theme-toggle:hover { opacity: 0.8; }
+
+    /* ── CARD LAYOUT & HERO ── */
+    .hero-section {
+      max-width: 1200px;
+      margin: 4rem auto 2rem;
+      padding: 0 2rem;
+      text-align: center;
+    }
+    .hero-section h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 3.5rem;
+      font-weight: 400;
+      line-height: 1.2;
+      margin-bottom: 1.5rem;
+    }
+    .hero-section p {
+      max-width: 700px;
+      margin: 0 auto;
+      color: var(--text-supporting);
+      font-size: 1.1rem;
+    }
+
+    .product-container {
+      max-width: 1200px;
+      margin: 0 auto 6rem;
+      padding: 2rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 2.5rem;
+    }
+    .product-card {
+      background: var(--bg-secondary);
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.01);
+      transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease, border-color 0.3s ease;
+      display: flex;
       flex-direction: column;
-      gap: 1.25rem;
-      transition: opacity 0.7s ease;
+    }
+    .product-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+    }
+    .product-image-wrapper {
+      position: relative;
+      width: 100%;
+      padding-top: 62.5%;
+      overflow: hidden;
+      background: rgba(0,0,0,0.05);
+    }
+    .product-image-wrapper img {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      object-fit: cover;
+    }
+    .product-content {
+      padding: 1.75rem;
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+    }
+    .product-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.75rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+    .product-description {
+      color: var(--text-supporting);
+      font-size: 0.95rem;
+      margin-bottom: 1.5rem;
+      flex-grow: 1;
+    }
+    .tour-trigger-btn {
+      width: 100%;
+      padding: 1rem;
+      background: var(--text-main);
+      color: var(--bg-primary);
+      border: none;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .tour-trigger-btn:hover { opacity: 0.9; }
+
+    .site-footer {
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border-color);
+      padding: 4rem 2rem;
+      text-align: center;
+      font-size: 0.9rem;
+      color: var(--text-supporting);
+      transition: background 0.3s ease, border-color 0.3s ease;
+    }
+    .footer-brand {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.8rem;
+      color: var(--text-main);
+      margin-bottom: 1rem;
+    }
+
+    /* ── FULLSCREEN 360° ENGINE PORTAL OVERLAY ── */
+    #tour-fullscreen-wrapper {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      background: #000;
+      display: none;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+    #tour-fullscreen-wrapper.visible {
+      display: block;
+      opacity: 1;
+    }
+    #pnlm-container { width: 100%; height: 100%; }
+    .pnlm-container { background: #000 !important; }
+
+    /* ── FIXED HUD AT BOTTOM EDGE OF PAGE ── */
+    .tour-bottom-dock {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 2030;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      max-width: calc(100vw - 2rem);
+      pointer-events: none;
+    }
+    .tour-bottom-dock * { pointer-events: auto; }
+
+    /* Terminate Engine Trigger Styled Smoothly at the very bottom */
+    .btn-close-tour {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  padding: 0.75rem 2rem;
+  border-radius: 30px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-close-tour:hover {
+  background: #5a5a5a91;
+  color: #000000;
+  border-color: #ffffff;
+  transform: scale(1.03);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+    /* Loading Systems */
+    #loading-veil {
+      position: absolute; inset: 0; z-index: 2050;
+      display: flex; align-items: center; justify-content: center;
+      background: #000; flex-direction: column; gap: 1.25rem;
+      transition: opacity 0.6s ease;
     }
     #loading-veil.hidden { opacity: 0; pointer-events: none; }
     .spinner {
-      width: 40px; height: 40px;
-      border-radius: 50%;
-      border: 2px solid rgba(255,255,255,0.15);
-      border-top-color: #fff;
+      width: 40px; height: 40px; border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.15); border-top-color: #fff;
       animation: spin 0.8s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .loading-label {
-      font-size: 10px;
-      letter-spacing: 0.3em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-    }
+    .loading-label { font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--text-muted); }
 
-    /* ── Transition veil ── */
     #transition-veil {
-      position: fixed;
-      inset: 0;
-      z-index: 10;
-      background: #000;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.7s ease;
+      position: absolute; inset: 0; z-index: 2020;
+      background: #000; opacity: 0; pointer-events: none; transition: opacity 0.5s ease;
     }
-    #transition-veil.active { opacity: 0.60; }
+    #transition-veil.active { opacity: 0.75; }
 
-    /* ── Top header ── */
-    #top-bar {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      z-index: 20;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.75rem;
-      padding: 1rem 1.5rem;
-      background: linear-gradient(to bottom, rgba(0,0,0,0.6), transparent);
+    #tour-hud-header {
+      position: absolute; top: 0; left: 0; right: 0; z-index: 2030;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.5rem; background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
+      pointer-events: none;
     }
-    .brand { display: flex; align-items: center; gap: 0.75rem; }
+    #tour-hud-header * { pointer-events: auto; }
+    .brand { display: flex; align-items: center; gap: 0.75rem; color: #fff;}
     .brand-icon {
-      width: 32px; height: 32px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.10);
-      border: 1px solid rgba(255,255,255,0.15);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 11px; font-weight: 600; letter-spacing: 0.12em;
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
+      width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.15);
+      border: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 600; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
     }
-    .brand-text { line-height: 1.25; }
-    .brand-sub {
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.25em;
-      color: var(--text-muted);
-    }
-    .brand-name {
-      font-size: 14px;
-      font-weight: 500;
-      font-family: 'Cormorant Garamond', serif;
-      letter-spacing: 0.04em;
-    }
-    .controls { display: flex; align-items: center; gap: 0.5rem; }
+    .brand-sub { font-size: 9px; text-transform: uppercase; letter-spacing: 0.2em; color: var(--text-muted); }
+    .brand-name { font-size: 15px; font-family: 'Cormorant Garamond', serif; }
+    
+    .controls { display: flex; align-items: center; gap: 0.75rem; }
     .live-badge {
-      display: none;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 6px 12px;
-      border-radius: 9999px;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid var(--glass-border);
-      font-size: 12px;
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      display: inline-flex; align-items: center; gap: 0.5rem; padding: 6px 14px;
+      border-radius: 9999px; background: rgba(255,255,255,0.08); border: 1px solid var(--glass-border);
+      font-size: 11px; color: #fff; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
     }
-    @media (min-width: 640px) { .live-badge { display: inline-flex; } }
-    .live-dot {
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      background: var(--emerald);
-      animation: pulse-dot 2s ease-in-out infinite;
-    }
-    @keyframes pulse-dot {
-      0%,100% { opacity: 1; } 50% { opacity: 0.4; }
-    }
+    .live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--emerald); animation: pulse-dot 2s infinite; }
+    @keyframes pulse-dot { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+    
     .btn-rotate {
-      padding: 6px 12px;
-      border-radius: 9999px;
-      font-size: 12px;
-      font-family: 'DM Sans', sans-serif;
-      cursor: pointer;
-      border: 1px solid var(--glass-border);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      transition: all 0.2s ease;
-      background: rgba(255,255,255,0.08);
-      color: var(--white);
+      padding: 6px 14px; border-radius: 9999px; font-size: 11px; color: #fff;
+      cursor: pointer; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); transition: all 0.2s;
     }
     .btn-rotate:hover { background: var(--glass-hover); }
-    .btn-rotate.active { background: var(--white); color: #000; border-color: var(--white); }
+    .btn-rotate.active { background: #fff; color: #000; border-color: #fff; }
 
-    /* ── Room badge ── */
-    #room-badge {
-      position: fixed;
-      top: 80px; left: 1rem;
-      z-index: 20;
-    }
-    @media (min-width: 640px) { #room-badge { top: 96px; left: 1.5rem; } }
+    #room-badge { position: absolute; top: 5.5rem; left: 1.5rem; z-index: 2030; }
     .badge-inner {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 10px 16px;
-      border-radius: 9999px;
-      background: var(--glass-bg);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid var(--glass-border);
-      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+      display: inline-flex; align-items: center; gap: 0.75rem; padding: 10px 18px;
+      border-radius: 9999px; background: var(--glass-bg); border: 1px solid var(--glass-border);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); color: #fff;
     }
-    .badge-counter {
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.3em;
-      color: var(--text-muted);
-    }
-    .badge-divider {
-      width: 1px; height: 12px;
-      background: rgba(255,255,255,0.20);
-    }
-    .badge-room {
-      font-size: 14px;
-      font-weight: 500;
-      letter-spacing: 0.04em;
-      font-family: 'Cormorant Garamond', serif;
-    }
+    .badge-counter { font-size: 10px; letter-spacing: 0.2em; color: var(--text-muted); }
+    .badge-divider { width: 1px; height: 12px; background: rgba(255,255,255,0.2); }
+    .badge-room { font-size: 15px; font-family: 'Cormorant Garamond', serif; }
 
-    /* ── Hint ── */
     #hint {
-      position: fixed;
-      bottom: 140px; left: 50%; transform: translateX(-50%);
-      z-index: 10;
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.3em;
-      color: var(--text-dim);
-      text-align: center;
-      pointer-events: none;
-      white-space: nowrap;
+      position: absolute; bottom: 145px; left: 50%; transform: translateX(-50%);
+      z-index: 2025; font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase;
+      color: var(--text-muted); text-align: center; pointer-events: none;
     }
-    @media (min-width: 640px) { #hint { bottom: 148px; } }
 
-    /* ── Thumbnail nav ── */
     #thumb-nav {
-      position: fixed;
-      bottom: 20px; left: 50%; transform: translateX(-50%);
-      z-index: 20;
-      display: flex;
-      gap: 8px;
-      padding: 8px;
-      border-radius: 16px;
-      background: rgba(0,0,0,0.55);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid var(--glass-border);
-      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
-      max-width: calc(100vw - 1.5rem);
-      overflow-x: auto;
+      display: flex; gap: 10px; padding: 10px; border-radius: 20px;
+      background: rgba(0,0,0,0.65); border: 1px solid var(--glass-border);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      overflow-x: auto; max-width: 100%;
     }
     .thumb-btn {
-      position: relative;
-      flex-shrink: 0;
-      width: 112px; height: 72px;
-      border-radius: 10px;
-      overflow: hidden;
-      cursor: pointer;
-      border: none;
-      padding: 0;
-      outline: none;
-      transition: all 0.3s ease;
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.15);
-      opacity: 0.75;
+      position: relative; flex-shrink: 0; width: 100px; height: 65px;
+      border-radius: 10px; overflow: hidden; cursor: pointer; border: none; padding: 0;
+      transition: all 0.25s ease; opacity: 0.6;
     }
-    .thumb-btn:hover { opacity: 1; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.40); }
-    .thumb-btn.active { opacity: 1; box-shadow: inset 0 0 0 2px var(--white); }
-    .thumb-btn img {
-      width: 100%; height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-    .thumb-overlay {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.20) 60%, transparent 100%);
-    }
-    .thumb-label {
-      position: absolute;
-      bottom: 4px; left: 8px; right: 8px;
-      font-size: 10px;
-      font-weight: 500;
-      letter-spacing: 0.05em;
-      color: var(--white);
-      text-align: left;
-    }
-    .thumb-active-dot {
-      position: absolute;
-      top: 6px; right: 6px;
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      background: var(--white);
-      box-shadow: 0 0 8px rgba(255,255,255,0.8);
-      display: none;
-    }
-    .thumb-btn.active .thumb-active-dot { display: block; }
+    .thumb-btn:hover, .thumb-btn.active { opacity: 1; }
+    .thumb-btn.active { box-shadow: 0 0 0 2px #fff; }
+    .thumb-btn img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .thumb-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); }
+    .thumb-label { position: absolute; bottom: 6px; left: 8px; right: 8px; font-size: 10px; color: #fff; text-align: left; font-weight: 500; }
 
-    /* ── Hotspots ── */
+    /* Hotspots Setup */
     .tour-hotspot {
-      height: 64px; width: 64px;
-      background: transparent;
-      margin-left: -32px;
-      margin-top: -32px;
+      height: 50px; width: 50px;
+      display: flex !important; align-items: center !important; justify-content: center !important;
     }
     .tour-hotspot-inner {
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 56px; width: 56px;
-      border-radius: 9999px;
-      background: rgba(255,255,255,0.95);
-      color: #111;
-      font-size: 22px;
-      font-weight: 600;
-      box-shadow: 0 8px 28px rgba(0,0,0,0.45);
-      animation: tour-pulse 2.4s ease-in-out infinite;
-      cursor: pointer;
-      transition: transform 0.2s ease;
+      position: relative; display: flex !important; align-items: center !important; justify-content: center !important;
+      height: 44px; width: 44px; border-radius: 50%; background: rgba(255, 255, 255, 0.95);
+      color: #000; font-size: 20px; font-weight: 700; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      cursor: pointer; transition: transform 0.2s, background-color 0.2s; -webkit-tap-highlight-color: transparent;
     }
-    .tour-hotspot-inner::before {
-      content: "";
-      position: absolute;
-      inset: -8px;
-      border-radius: 9999px;
-      border: 1px solid rgba(255,255,255,0.35);
-    }
-    .tour-hotspot:hover .tour-hotspot-inner {
-      transform: scale(1.08);
-      background: #fff;
-    }
+    .tour-hotspot:hover .tour-hotspot-inner { transform: scale(1.1); background: #ffffff; }
     .tour-hotspot-label {
-      position: absolute;
-      top: 68px; left: 50%;
-      transform: translateX(-50%);
-      white-space: nowrap;
-      background: rgba(0,0,0,0.75);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      color: #fff;
-      font-size: 11px;
-      font-weight: 500;
-      letter-spacing: 0.05em;
-      padding: 5px 12px;
-      border-radius: 9999px;
-      border: 1px solid rgba(255,255,255,0.10);
-      opacity: 0;
-      transition: opacity 0.2s, transform 0.2s;
-      pointer-events: none;
-      font-family: 'DM Sans', sans-serif;
+      position: absolute; top: 52px; left: 50%; transform: translateX(-50%);
+      white-space: nowrap; background: rgba(0,0,0,0.85); color: #fff;
+      font-size: 11px; padding: 4px 12px; border-radius: 20px; opacity: 0; transition: opacity 0.2s; pointer-events: none;
     }
-    .tour-hotspot:hover .tour-hotspot-label {
-      opacity: 1;
-      transform: translateX(-50%) translateY(2px);
-    }
-    @keyframes tour-pulse {
-      0%,100% { box-shadow: 0 8px 28px rgba(0,0,0,0.45), 0 0 0 0 rgba(255,255,255,0.45); }
-      50%      { box-shadow: 0 8px 28px rgba(0,0,0,0.45), 0 0 0 16px rgba(255,255,255,0); }
+    .tour-hotspot:hover .tour-hotspot-label { opacity: 1; }
+
+    @media (max-width: 640px) {
+      .site-header { padding: 1rem; }
+      .site-logo { font-size: 1.3rem; }
+      .site-nav a:not(.theme-toggle) { display: none; }
+      .hero-section h1 { font-size: 2.2rem; }
+      #room-badge { top: 4.5rem; left: 1rem; }
+      .tour-hotspot-inner { height: 40px; width: 40px; font-size: 16px; }
+      .tour-hotspot-label { display: none; }
+      #hint { bottom: 160px; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Pannellum mount -->
-  <div id="pnlm-container"></div>
-
-  <!-- Loading veil -->
-  <div id="loading-veil">
-    <div class="spinner"></div>
-    <p class="loading-label">Preparing your tour</p>
-  </div>
-
-  <!-- Transition veil -->
-  <div id="transition-veil"></div>
-
-  <!-- Top bar -->
-  <header id="top-bar">
-    <div class="brand">
-      <div class="brand-icon">VT</div>
-      <div class="brand-text">
-        <p class="brand-sub">Virtual Tour</p>
-        <p class="brand-name">Private Residence</p>
-      </div>
-    </div>
-    <div class="controls">
-      <span class="live-badge">
-        <span class="live-dot"></span>
-        Live 360°
-      </span>
-      <button id="btn-rotate" class="btn-rotate">Auto-rotate</button>
-    </div>
+  <header class="site-header">
+    <div class="site-logo">Virtual Tour Portfolio</div>
+    <nav class="site-nav">
+      <a href="#overview">Overview</a>
+      <a href="#gallery">Spaces</a>
+      <button class="theme-toggle" id="theme-toggle-btn" onclick="toggleSiteTheme()">
+        <span>Dark Mode</span>
+      </button>
+    </nav>
   </header>
 
-  <!-- Room badge -->
-  <div id="room-badge">
-    <div class="badge-inner">
-      <span class="badge-counter" id="badge-counter">01 / 02</span>
-      <span class="badge-divider"></span>
-      <span class="badge-room" id="badge-room">Living Room</span>
+  <section class="hero-section" id="overview">
+    <h1>Take a Tour in Your Future House</h1>
+    <p>Immerse yourself within architectural mastery. Browse through our curation of elegant spaces down below, click to open an interactive 360° virtual walking viewport.</p>
+  </section>
+
+  <main class="product-container" id="gallery">
+    <article class="product-card">
+      <div class="product-image-wrapper">
+        <img src="src/assets/living.jpeg" alt="Living Room" onerror="this.style.background='#222'"/>
+      </div>
+      <div class="product-content">
+        <h3 class="product-title">The Grand Lounge</h3>
+        <p class="product-description">Floor-to-ceiling panoramic fenestration meets meticulous bespoke minimalist styling. Crafted for high-fidelity relaxation.</p>
+        <button class="tour-trigger-btn" onclick="launchVirtualTour('living')">Take a Tour</button>
+      </div>
+    </article>
+
+    <article class="product-card">
+      <div class="product-image-wrapper">
+        <img src="src/assets/kitchen.jpeg" alt="Kitchen" onerror="this.style.background='#222'"/>
+      </div>
+      <div class="product-content">
+        <h3 class="product-title">Culinary Suite & Dining</h3>
+        <p class="product-description">An integrated state-of-the-art workspace featuring marble counters and fully dynamic overhead modern accents.</p>
+        <button class="tour-trigger-btn" onclick="launchVirtualTour('kitchen')">Take a Tour</button>
+      </div>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-brand">Luxury Estates International</div>
+    <p>© 2026 Architectural Horizons Portfolio. All rights reserved.</p>
+  </footer>
+
+
+  <div id="tour-fullscreen-wrapper">
+    <div id="pnlm-container"></div>
+
+    <div id="loading-veil">
+      <div class="spinner"></div>
+      <p class="loading-label">Optimizing Wide Aspect 360° Textures</p>
+    </div>
+
+    <div id="transition-veil"></div>
+
+    <div id="tour-hud-header">
+      <div class="brand">
+        <div class="brand-icon">360°</div>
+        <div class="brand-text">
+          <p class="brand-sub">Virtual Tour</p>
+          <p class="brand-name">Private Residence</p>
+        </div>
+      </div>
+      <div class="controls">
+        <span class="live-badge"><span class="live-dot"></span>Active Viewport</span>
+        <button id="btn-rotate" class="btn-rotate">Auto-rotate</button>
+      </div>
+    </div>
+    <div class="tour-bottom-dock">
+      <nav id="thumb-nav"></nav>
+      <button class="btn-close-tour" onclick="terminateVirtualTour()">Close Tour </button>
     </div>
   </div>
 
-  <!-- Hint -->
-  <p id="hint">Drag to look around · Click <span style="color:rgba(255,255,255,0.8)">→</span> to walk through</p>
 
-  <!-- Thumbnail nav -->
-  <nav id="thumb-nav"></nav>
-
-  <!-- Pannellum JS -->
   <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
 
   <script>
-    // ─────────────────────────────────────────────────────────────────────────
-    // ROOM DATA
-    // ─────────────────────────────────────────────────────────────────────────
-    // ⚠️  Replace the `image` URLs below with the paths to YOUR actual
-    //     equirectangular panorama files.  If you deploy to GitHub Pages,
-    //     put living.jpeg and kitchen.jpeg in the same folder as index.html
-    //     and just use: image: "living.jpeg"
-    // ─────────────────────────────────────────────────────────────────────────
     const rooms = [
       {
         id: "living",
         name: "Living Room",
-        // Replace with your actual image path, e.g. "living.jpeg"
-        image: "src/assets/living.jpeg",
-        // Thumbnail — can be same image or a cropped preview
+        image: "src/assets/living.jpeg", 
         thumb: "src/assets/living.jpeg",
         exits: {
           kitchen: { to: "kitchen", yaw: 60, pitch: -5 }
@@ -423,13 +490,26 @@
       }
     ];
 
-    // ── State ──────────────────────────────────────────────────────────────
     let viewer = null;
     let autoRotate = false;
     let transitioning = false;
     let currentRoom = "living";
 
-    // ── Build hotspot list for a room ──────────────────────────────────────
+    /* DARK / LIGHT THEME TRIGGER SWITCH */
+    function toggleSiteTheme() {
+      const currentTheme = document.documentElement.getAttribute("data-theme") || "light";
+      const targetTheme = currentTheme === "light" ? "dark" : "light";
+      
+      document.documentElement.setAttribute("data-theme", targetTheme);
+      
+      const btn = document.getElementById("theme-toggle-btn");
+      if(targetTheme === "dark") {
+        btn.innerHTML = `<span>Light Mode</span>`;
+      } else {
+        btn.innerHTML = `<span>Dark Mode</span>`;
+      }
+    }
+
     function buildHotspots(roomId) {
       const room = rooms.find(r => r.id === roomId);
       return Object.values(room.exits).map(exit => ({
@@ -445,19 +525,19 @@
       }));
     }
 
-    // ── Create hotspot DOM ─────────────────────────────────────────────────
     function makeHotspot(div, label) {
       const inner = document.createElement("div");
       inner.className = "tour-hotspot-inner";
       inner.innerHTML = "→";
+      
       const tip = document.createElement("span");
       tip.className = "tour-hotspot-label";
       tip.textContent = "Enter " + label;
+      
       inner.appendChild(tip);
       div.appendChild(inner);
     }
 
-    // ── Build thumbnail nav ────────────────────────────────────────────────
     function buildThumbs() {
       const nav = document.getElementById("thumb-nav");
       nav.innerHTML = "";
@@ -469,27 +549,21 @@
           <img src="${room.thumb}" alt="${room.name}" onerror="this.style.background='#1a1a1a'"/>
           <span class="thumb-overlay"></span>
           <span class="thumb-label">${room.name}</span>
-          <span class="thumb-active-dot"></span>
         `;
         btn.addEventListener("click", () => walkTo(room.id));
         nav.appendChild(btn);
       });
     }
 
-    // ── Update UI for current room ─────────────────────────────────────────
     function updateRoomUI(roomId) {
-      currentRoom = roomId;
-      const idx = rooms.findIndex(r => r.id === roomId) + 1;
-      const name = rooms.find(r => r.id === roomId).name;
-      document.getElementById("badge-counter").textContent =
-        String(idx).padStart(2,"0") + " / " + String(rooms.length).padStart(2,"0");
-      document.getElementById("badge-room").textContent = name;
-      document.querySelectorAll(".thumb-btn").forEach(btn => {
-        btn.classList.toggle("active", btn.dataset.id === roomId);
-      });
-    }
+    currentRoom = roomId;
+  
+     // Kept intact to manage your thumbnail active classes safely
+    document.querySelectorAll(".thumb-btn").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.id === roomId);
+  });
+}
 
-    // ── Smooth walk transition ─────────────────────────────────────────────
     function walkTo(targetId) {
       if (!viewer || transitioning) return;
       const fromId = viewer.getScene();
@@ -507,56 +581,69 @@
       const aimYaw = exit ? exit.yaw : viewer.getYaw();
       const aimPitch = exit ? exit.pitch : 0;
 
-      try { viewer.lookAt(aimPitch, aimYaw, 95, 650); } catch {}
-
-      setTimeout(() => {
-        try { viewer.lookAt(aimPitch, aimYaw, 55, 550); } catch {}
-      }, 680);
+      // Retain full unzoomed wide-angle perspective fields across room walks
+      try { viewer.lookAt(aimPitch, aimYaw, 120, 650); } catch {}
 
       setTimeout(() => {
         const entryYaw = back ? back.yaw + 180 : aimYaw;
-        try { viewer.loadScene(targetId, 0, entryYaw, 65); } catch {}
+        // Forces target room scene to safely initiate fully zoomed out (hfov 120)
+        try { viewer.loadScene(targetId, 0, entryYaw, 120); } catch {}
         updateRoomUI(targetId);
-        setTimeout(() => {
-          try { viewer.lookAt(0, entryYaw, 100, 900); } catch {}
-        }, 260);
         setTimeout(() => {
           transitioning = false;
           document.getElementById("transition-veil").classList.remove("active");
           if (autoRotate) try { viewer.startAutoRotate(-2); } catch {}
-        }, 1400);
-      }, 1180);
+        }, 800);
+      }, 700);
     }
 
-    // ── Auto-rotate toggle ─────────────────────────────────────────────────
-    document.getElementById("btn-rotate").addEventListener("click", () => {
-      autoRotate = !autoRotate;
-      const btn = document.getElementById("btn-rotate");
-      btn.textContent = autoRotate ? "Pause" : "Auto-rotate";
-      btn.classList.toggle("active", autoRotate);
-      if (!viewer) return;
-      try {
-        if (autoRotate) viewer.startAutoRotate(-2);
-        else viewer.stopAutoRotate();
-      } catch {}
-    });
+    function launchVirtualTour(initialRoomId) {
+      currentRoom = initialRoomId;
+      const wrapper = document.getElementById("tour-fullscreen-wrapper");
+      wrapper.style.display = "block";
+      setTimeout(() => wrapper.classList.add("visible"), 50);
+      document.body.style.overflow = "hidden";
 
-    // ── Init viewer ────────────────────────────────────────────────────────
+      if (!viewer) {
+        initViewer();
+      } else {
+        // Force fully unzoomed frame state layout parameters on re-open click triggers
+        viewer.loadScene(initialRoomId, 0, 0, 120);
+        updateRoomUI(initialRoomId);
+      }
+    }
+
+    function terminateVirtualTour() {
+      const wrapper = document.getElementById("tour-fullscreen-wrapper");
+      wrapper.classList.remove("visible");
+      try { viewer.stopAutoRotate(); } catch {}
+      autoRotate = false;
+      const btn = document.getElementById("btn-rotate");
+      btn.textContent = "Auto-rotate";
+      btn.classList.remove("active");
+      
+      setTimeout(() => {
+        wrapper.style.display = "none";
+        document.body.style.overflow = "auto";
+      }, 500);
+    }
+
     function initViewer() {
       const sceneConfig = {};
       rooms.forEach(r => {
         sceneConfig[r.id] = {
           type: "equirectangular",
           panorama: r.image,
-          pitch: 0, yaw: 0, hfov: 100,
+          pitch: 0, yaw: 0, 
+          hfov: 120, // Forces individual maps to open completely zoomed out 
           hotSpots: buildHotspots(r.id)
         };
       });
 
       viewer = pannellum.viewer("pnlm-container", {
         default: {
-          firstScene: "living",
-          sceneFadeDuration: 1200,
+          firstScene: currentRoom,
+          sceneFadeDuration: 800,
           autoLoad: true,
           showControls: false,
           showFullscreenCtrl: false,
@@ -564,27 +651,34 @@
           keyboardZoom: true,
           mouseZoom: true,
           draggable: true,
-          hfov: 100,
-          minHfov: 50,
-          maxHfov: 120,
+          /* ── FIXED WIDE ANGLE VIEWPORT ENHANCEMENTS ── */
+          hfov: 120,       // Global Default Starting Zoom (120 = Maximum panoramic clarity)
+          minHfov: 50,     // Prevents user from over-zooming into pixels
+          maxHfov: 120,    // Limits pulling back further than default baseline frame bounds
+          avoidStandardUnpackRowLen: true, 
           compass: false,
-          friction: 0.18
+          friction: 0.20
         },
         scenes: sceneConfig
       });
 
       viewer.on("load", () => {
-        const veil = document.getElementById("loading-veil");
-        veil.classList.add("hidden");
-        setTimeout(() => veil.style.display = "none", 700);
+        document.getElementById("loading-veil").classList.add("hidden");
       });
 
       viewer.on("scenechange", id => updateRoomUI(id));
+      buildThumbs();
     }
 
-    // ── Bootstrap ─────────────────────────────────────────────────────────
-    buildThumbs();
-    initViewer();
+    document.getElementById("btn-rotate").addEventListener("click", () => {
+      autoRotate = !autoRotate;
+      const btn = document.getElementById("btn-rotate");
+      btn.textContent = autoRotate ? "Pause" : "Auto-rotate";
+      btn.classList.toggle("active", autoRotate);
+      if (!viewer) return;
+      if (autoRotate) viewer.startAutoRotate(-2);
+      else viewer.stopAutoRotate();
+    });
   </script>
 </body>
 </html>
