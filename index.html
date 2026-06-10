@@ -127,7 +127,7 @@
     .tour-frame-container {
       position: relative;
       width: 100%;
-      height: 600px; /* Big showcase card profile */
+      height: 600px;
       background: #000;
       border-radius: 24px;
       overflow: hidden;
@@ -170,7 +170,7 @@
       border: 2px solid #ffffff;
       box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.15), 0 4px 15px rgba(0,0,0,0.4);
       cursor: pointer;
-      transform: perspective(200px) rotateX(60deg); /* Lays the element flat on the floor */
+      transform: perspective(200px) rotateX(60deg);
       transition: all 0.3s ease;
       -webkit-tap-highlight-color: transparent;
     }
@@ -346,17 +346,25 @@
         name: "Living",
         image: "src/assets/living.jpeg", 
         thumb: "src/assets/living.jpeg",
+        // The display angles when landing on the living room (Picture 1 format)
+        targetPitch:0,
+        targetYaw: -150,
         exits: {
-          kitchen: { to: "kitchen", yaw: 45, pitch: -22 } // Adjusted downward pitch to align directly flat on floor textures
+          // Positions the circle right beside the curved couch frame
+          kitchen: { to: "kitchen", yaw: 55, pitch: -25 } 
         }
       },
       {
         id: "kitchen",
-        name: "kitchen",
+        name: "Dining-Suite",
         image: "src/assets/kitchen.jpeg",
         thumb: "src/assets/kitchen.jpeg",
+        // The display angles when landing on the kitchen room (Picture 2 format)
+        targetPitch: 0,
+        targetYaw: 150,
         exits: {
-          living: { to: "living", yaw: -135, pitch: -24 }
+          // Circle remains in place relative to the kitchen perspective layout rules
+          living: { to: "living", yaw: -50, pitch: -24 }
         }
       }
     ];
@@ -366,7 +374,6 @@
     let transitioning = false;
     let currentRoom = "living";
 
-    // Initialize Native Embedded Virtual Tour Engine on Window Load
     window.addEventListener('DOMContentLoaded', () => {
       initViewer();
     });
@@ -377,9 +384,9 @@
         sceneConfig[r.id] = {
           type: "equirectangular",
           panorama: r.image,
-          pitch: -5, 
-          yaw: 0, 
-          hfov: 110, 
+          pitch: r.targetPitch, 
+          yaw: r.targetYaw, 
+          hfov: 120, // Maximized initial zoom out setup
           hotSpots: buildHotspots(r.id)
         };
       });
@@ -395,9 +402,9 @@
           keyboardZoom: true,
           mouseZoom: true,
           draggable: true,
-          hfov: 110,
+          hfov: 120,    // Force absolute default zoomed out status
           minHfov: 60,
-          maxHfov: 120,
+          maxHfov: 120, // Limit maximum view frame context boundary
           friction: 0.15
         },
         scenes: sceneConfig
@@ -426,7 +433,6 @@
       }));
     }
 
-    // Creates the streamlined on-floor walking nodes without raw text arrow disruptions
     function makeHotspotCircle(div, label) {
       const inner = document.createElement("div");
       inner.className = "tour-hotspot-inner";
@@ -447,8 +453,13 @@
       document.getElementById("transition-veil").classList.add("active");
       try { viewer.stopAutoRotate(); } catch {}
 
+      const targetRoom = rooms.find(r => r.id === targetId);
+
       setTimeout(() => {
-        try { viewer.loadScene(targetId, -5, 0, 110); } catch {}
+        try { 
+          // Dynamically sets explicit camera alignment and resets hfov to max zoom-out (120)
+          viewer.loadScene(targetId, targetRoom.targetPitch, targetRoom.targetYaw, 120); 
+        } catch {}
         updateRoomUI(targetId);
         setTimeout(() => {
           transitioning = false;
@@ -486,7 +497,6 @@
       });
     }
 
-    // Toggle between inline big-card view and full-viewport overlay mode
     function toggleMaximizeTour() {
       const card = document.getElementById("main-tour-card");
       const btn = document.getElementById("btn-maximize");
@@ -495,16 +505,13 @@
       btn.textContent = isMax ? "Minimize View" : "Maximize View";
       btn.classList.toggle("active", isMax);
       
-      // Prevent body layout background scrolling while maximized
       document.body.style.overflow = isMax ? "hidden" : "auto";
       
-      // Force engine frame updates to fit the altered bounds smoothly
       if (viewer) {
         setTimeout(() => { viewer.resize(); }, 150);
       }
     }
 
-    // Auto-Rotate HUD Toggle
     document.getElementById("btn-rotate").addEventListener("click", () => {
       autoRotate = !autoRotate;
       const btn = document.getElementById("btn-rotate");
@@ -515,7 +522,6 @@
       else viewer.stopAutoRotate();
     });
 
-    // Dark/Light styling toggles
     function toggleSiteTheme() {
       const currentTheme = document.documentElement.getAttribute("data-theme") || "light";
       const targetTheme = currentTheme === "light" ? "dark" : "light";
